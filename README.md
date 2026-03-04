@@ -4,18 +4,31 @@ A REST service that executes shell commands on isolated remote executors. Built 
 
 ## Architecture
 
-```
-                        ┌──────────────────────────────────────┐
-                        │          Spring Boot Service          │
-                        │                                      │
-  POST /api/executions  │  ┌────────────┐   ┌───────────────┐  │    ┌─────────────────┐
-  ─────────────────────►│  │ Controller  ├──►│ExecutionService├──┼───►│ Docker Container │
-                        │  └────────────┘   └───────┬───────┘  │    │  (remote executor)│
-  GET /api/executions/  │                           │          │    │                   │
-       {id}             │              ┌────────────┘          │    │  /bin/sh -c "..." │
-  ─────────────────────►│              │ ConcurrentHashMap     │    └─────────────────┘
-                        │              │ (execution state)     │
-                        └──────────────┴───────────────────────┘
+```mermaid
+flowchart LR
+
+Client["Client / CI System"]
+
+subgraph API["Spring Boot Service"]
+Controller["ExecutionController\nREST API"]
+Service["ExecutionService\nLifecycle management"]
+State["ConcurrentHashMap\nExecution State Store"]
+DockerExec["DockerExecutor\nContainer runner"]
+end
+
+Docker["Docker Container\nRemote Executor\n/bin/sh -c script"]
+
+Client -->|POST /api/executions| Controller
+Client -->|GET /api/executions/id| Controller
+
+Controller --> Service
+Service --> State
+Service --> DockerExec
+DockerExec --> Docker
+Docker --> DockerExec
+DockerExec --> Service
+Service --> Controller
+Controller --> Client
 ```
 
 When a user submits a script, the service:
