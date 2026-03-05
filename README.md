@@ -2,8 +2,6 @@
 
 A REST service that executes shell commands on isolated remote executors. Built with **Java 17** and **Spring Boot 3**, using **Docker containers** as the execution backend.
 
-This project is a solution to **Task #1 — "Create a simple service to execute shell commands on a remote executor"** from the *Autoscaling of virtual machines in TeamCity Cloud* assignment.
-
 ---
 
 ## Task requirements and how they are met
